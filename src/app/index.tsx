@@ -27,8 +27,9 @@ const index = () => {
       <Text
         style={{
           fontFamily: "Chango_400Regular",
-          paddingTop: 800,
+          paddingTop: 600,
           fontSize: 30,
+          color: "white",
         }}
       >
         Berai
