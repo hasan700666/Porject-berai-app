@@ -116,7 +116,7 @@ export default function Welcome() {
             <Text style={[styles.buttonText, { color: "#1E293B" }]}>SIGNUP</Text>
           </Pressable>
         </View>
-      </Animated.View>
+      </Animated.View> 
     </SafeAreaView>
   );
 }

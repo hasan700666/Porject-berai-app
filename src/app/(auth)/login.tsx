@@ -1,28 +1,32 @@
-import React, { useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  Pressable,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { Stack, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  useFonts,
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
   Inter_800ExtraBold,
+  useFonts,
 } from "@expo-google-fonts/inter";
 import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Login() {
+const { width } = Dimensions.get("window");
+
+export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,116 +45,122 @@ export default function Login() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#46BCEE" />
+        <ActivityIndicator size="large" color="#A8DBF4" />
       </View>
     );
   }
 
   const handleLogin = () => {
-    console.log("Logging in with:", email, password);
-    // Navigate to home after successful auth
+    console.log("Login pressed:", email, password);
     router.replace("/home");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Background Blobs for Design Aesthetics */}
+      <View style={styles.topLeftBlob1} pointerEvents="none" />
+      <View style={styles.topLeftBlob2} pointerEvents="none" />
+      <View style={styles.bottomRightBlob} pointerEvents="none" />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Back Button */}
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1E293B" />
-          </Pressable>
-
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Log in to access your educational workspace</Text>
+            <Text style={styles.headerText}>LOGIN</Text>
           </View>
 
-          {/* Form */}
-          <View style={styles.form}>
+          {/* Illustration */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../../../assets/welcome_img/login.png")}
+              style={styles.illustration}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.formContainer}>
             {/* Email Field */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  emailFocused && styles.inputWrapperFocused,
-                ]}
-              >
-                <Ionicons name="mail-outline" size={20} color={emailFocused ? "#46BCEE" : "#94A3B8"} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                  onFocus={() => setEmailFocused(true)}
-                  onBlur={() => setEmailFocused(false)}
-                />
-              </View>
+            <View
+              style={[
+                styles.inputWrapper,
+                { backgroundColor: "#E7F18C" },
+                emailFocused && styles.inputFocused,
+              ]}
+            >
+              <Ionicons name="person" size={20} color="#1E293B" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Peeely@mail.com"
+                placeholderTextColor="#64748B"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
+              />
             </View>
 
             {/* Password Field */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  passwordFocused && styles.inputWrapperFocused,
-                ]}
-              >
-                <Ionicons name="lock-closed-outline" size={20} color={passwordFocused ? "#46BCEE" : "#94A3B8"} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#94A3B8"
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  value={password}
-                  onChangeText={setPassword}
-                  onFocus={() => setPasswordFocused(true)}
-                  onBlur={() => setPasswordFocused(false)}
+            <View
+              style={[
+                styles.inputWrapper,
+                { backgroundColor: "#A8DBF4" },
+                passwordFocused && styles.inputFocused,
+              ]}
+            >
+              <Ionicons name="lock-closed" size={20} color="#1E293B" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="••••••••"
+                placeholderTextColor="#64748B"
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
+              />
+              <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={20}
+                  color="#1E293B"
                 />
-                <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color="#94A3B8"
-                  />
-                </Pressable>
-              </View>
+              </Pressable>
             </View>
-
-            {/* Forgot Password */}
-            <Pressable style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </Pressable>
 
             {/* Login Button */}
             <Pressable
-              onPress={handleLogin}
+              onPress={() => {
+                console.log("Login pressed");
+                router.push("/login");
+              }}
               style={({ pressed }) => [
-                styles.submitButton,
+                styles.button,
                 {
                   backgroundColor: "#46BCEE",
-                  transform: [{ scale: pressed ? 0.98 : 1 }],
-                },
+                  transform: [{ scale: pressed ? 0.98 : 1 }]
+                }
               ]}
             >
-              <Text style={styles.submitButtonText}>LOGIN</Text>
+              <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>LOGIN</Text>
             </Pressable>
           </View>
 
-          {/* Footer */}
+          {/* Footer Link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>Don't have an Account ? </Text>
             <Pressable onPress={() => router.push("/signup")}>
               <Text style={styles.footerLink}>Sign Up</Text>
             </Pressable>
@@ -174,59 +184,52 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 30,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 10,
     paddingBottom: 24,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#F1F5F9",
+  header: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 20,
+    zIndex: 10,
+  },
+  headerText: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 13,
+    color: "#1E293B",
+    letterSpacing: 1.2,
+  },
+  imageContainer: {
+    width: "100%",
+    height: 330,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 12,
+    marginVertical: 15,
+    zIndex: 10,
   },
-  header: {
-    marginTop: 32,
-    marginBottom: 32,
+  illustration: {
+    width: "100%",
+    height: "100%",
   },
-  title: {
-    fontFamily: "Inter_800ExtraBold",
-    fontSize: 28,
-    color: "#1E293B",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 15,
-    color: "#64748B",
-    lineHeight: 22,
-  },
-  form: {
-    flex: 1,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontFamily: "Inter_600SemiBold",
-    fontSize: 14,
-    color: "#475569",
-    marginBottom: 8,
+  formContainer: {
+    width: "100%",
+    gap: 16,
+    zIndex: 10,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: "#E2E8F0",
-    borderRadius: 16,
+    borderRadius: 30,
     height: 56,
-    paddingHorizontal: 16,
-    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 20,
+    borderWidth: 1.5,
+    borderColor: "transparent",
   },
-  inputWrapperFocused: {
-    borderColor: "#46BCEE",
-    backgroundColor: "#FFFFFF",
+  inputFocused: {
+    borderColor: "#475569",
   },
   inputIcon: {
     marginRight: 12,
@@ -241,48 +244,89 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 4,
   },
-  forgotPassword: {
-    alignSelf: "flex-end",
-    marginBottom: 28,
-  },
-  forgotPasswordText: {
-    fontFamily: "Inter_600SemiBold",
-    fontSize: 14,
-    color: "#46BCEE",
-  },
-  submitButton: {
+  gradientButton: {
+    borderRadius: 30,
+    width: "100%",
     height: 56,
-    borderRadius: 28,
+    marginTop: 10,
+    shadowColor: "#A8DBF4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  buttonInner: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#46BCEE",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 3,
-    marginTop: 10,
   },
-  submitButtonText: {
+  buttonText: {
+    color: "#1E293B",
     fontFamily: "Inter_700Bold",
     fontSize: 16,
-    color: "#FFFFFF",
-    letterSpacing: 0.8,
+    letterSpacing: 1.2,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 40,
-    marginBottom: 16,
+    marginTop: 20,
+    width: "100%",
+    zIndex: 10,
   },
   footerText: {
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Inter_500Medium",
     fontSize: 14,
-    color: "#64748B",
+    color: "#000000",
   },
   footerLink: {
     fontFamily: "Inter_700Bold",
     fontSize: 14,
-    color: "#46BCEE",
+    color: "#000000",
+    textDecorationLine: "underline",
+  },
+
+  // Background Blob styling for premium visual aesthetics
+  topLeftBlob1: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: "#A8DBF4",
+    opacity: 0.15,
+    top: -50,
+    left: -50,
+  },
+  topLeftBlob2: {
+    position: "absolute",
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: "#E7F18C",
+    opacity: 0.2,
+    top: 50,
+    left: -40,
+  },
+  bottomRightBlob: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: "#A8DBF4",
+    opacity: 0.18,
+    bottom: -60,
+    right: -60,
+  },
+  button: {
+    width: "100%",
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
 });
