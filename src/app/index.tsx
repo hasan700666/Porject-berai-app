@@ -22,7 +22,7 @@ const index = () => {
       <Image
         style={styles.container}
         resizeMode="contain"
-        source={require("../../assets/images/Untitled-2-01.jpg")}
+        source={require("../../assets/images/splash_screen.jpg")}
       />
       <Text
         style={{
@@ -43,7 +43,7 @@ export default index;
 const styles = StyleSheet.create({
   // Untitled-2-01 (ব্যাকগ্রাউন্ড বা মেইন কন্টেইনার)
   container: {
-    position: 'absolute',
+    position: "absolute",
     width: 1000,
     height: 1000,
   },

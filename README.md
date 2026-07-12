@@ -6,3 +6,11 @@
 4. chack the file eas.json
 5.  
 
+// name
+
+Berai
+
+// color 
+
+#BCEB07
+#46BCEE
