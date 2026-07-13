@@ -14,3 +14,8 @@ Berai
 
 #BCEB07
 #46BCEE
+
+// font
+
+Chango --> name
+https://fonts.google.com/specimen/Chango?preview.script=Latn --> link

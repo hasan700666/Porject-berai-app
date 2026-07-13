@@ -1,3 +1,4 @@
+import { Chango_400Regular } from "@expo-google-fonts/chango";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -32,6 +33,7 @@ export default function Welcome() {
     Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
+    Chango_400Regular,
   });
 
   // Animated values for entrance animation
@@ -70,7 +72,7 @@ export default function Welcome() {
       <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>WELCOME TO BERAI</Text>
+          <Text style={styles.title}>WELCOME</Text>
         </View>
 
         {/* Central Illustration */}
@@ -116,7 +118,7 @@ export default function Welcome() {
             <Text style={[styles.buttonText, { color: "#1E293B" }]}>SIGNUP</Text>
           </Pressable>
         </View>
-      </Animated.View> 
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -145,12 +147,12 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   title: {
-    fontFamily: "Inter_800ExtraBold",
-    fontSize: 13,
+    fontFamily: "Chango_400Regular",
+    fontSize: 25,
     color: "#1E293B",
     letterSpacing: 1.2,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
     fontFamily: "Inter_400Regular",

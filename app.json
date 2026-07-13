@@ -24,18 +24,12 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash_screen.jpg",
-          "resizeMode": "cover"
+          "resizeMode": "cover",
+          "imageWidth": 1000,
+          "enableFullScreenImage_legacy": true
         }
       ],
-      "@react-native-vector-icons/ionicons",
-      [
-        "expo-font",
-        {
-          "fonts": [
-            "node_modules/@expo-google-fonts/chango/400Regular/Chango_400Regular.ttf"
-          ]
-        }
-      ]
+      "@react-native-vector-icons/ionicons"
     ],
     "experiments": {
       "typedRoutes": true,

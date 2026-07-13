@@ -1,3 +1,4 @@
+import { Chango_400Regular } from "@expo-google-fonts/chango";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -40,6 +41,7 @@ export default function SignupScreen() {
     Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
+    Chango_400Regular
   });
 
   if (!fontsLoaded) {
@@ -174,7 +176,7 @@ export default function SignupScreen() {
               pressed && { backgroundColor: "#F8FAFC" },
             ]}
           >
-            <Image source={require("@/assets/images/search.png")} style={{width: 20, height: 20, marginRight: 12}} />
+            <Image source={require("@/assets/images/search.png")} style={{ width: 20, height: 20, marginRight: 12 }} />
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
           </Pressable>
         </ScrollView>
@@ -209,8 +211,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerText: {
-    fontFamily: "Inter_700Bold",
-    fontSize: 13,
+    fontFamily: "Chango_400Regular",
+    fontSize: 25,
     color: "#1E293B",
     letterSpacing: 1.2,
   },

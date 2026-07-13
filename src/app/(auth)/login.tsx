@@ -1,3 +1,4 @@
+import { Chango_400Regular } from "@expo-google-fonts/chango";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -40,6 +41,7 @@ export default function LoginScreen() {
     Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
+    Chango_400Regular,
   });
 
   if (!fontsLoaded) {
@@ -197,8 +199,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerText: {
-    fontFamily: "Inter_700Bold",
-    fontSize: 13,
+    fontFamily: "Chango_400Regular",
+    fontSize: 25,
     color: "#1E293B",
     letterSpacing: 1.2,
   },
