@@ -54,7 +54,7 @@ export default function SignupScreen() {
 
   const handleSignup = () => {
     console.log("Signup pressed:", email, password);
-    router.replace("/home");
+    router.replace("/main");
   };
 
   return (

@@ -51,10 +51,10 @@ export default function LoginScreen() {
       </View>
     );
   }
-
+ 
   const handleLogin = () => {
     console.log("Login pressed:", email, password);
-    router.replace("/home");
+    router.replace("/main");
   };
 
   return (

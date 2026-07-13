@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Berai",
+    "name": "BERAI",
     "slug": "vaseting_app_2",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,8 +24,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash_screen.jpg",
-          "resizeMode": "cover",
-          "imageWidth": 1000,
+          "resizeMode": "stretch",
           "enableFullScreenImage_legacy": true
         }
       ],
