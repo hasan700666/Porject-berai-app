@@ -199,7 +199,7 @@ export default function AtlasScreen() {
         {posts.map((post) => {
           const userVote = userVotes[post.id] || null;
           return (
-            <View key={post.id} style={styles.cardContainer}>
+            <View key={post.id}>
               {/* User Info Header */}
               <View style={styles.userHeader}>
                 {/* Location (on the right) */}

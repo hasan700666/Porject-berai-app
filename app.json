@@ -25,7 +25,8 @@
         {
           "image": "./assets/images/splash_screen.jpg",
           "resizeMode": "cover",
-          "enableFullScreenImage_legacy": true
+          "backgroundColor": "#ffffff",
+          "imageWidth": 200
         }
       ],
       "@react-native-vector-icons/ionicons"
