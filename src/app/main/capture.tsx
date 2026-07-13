@@ -24,7 +24,7 @@ import {
 
 export default function CaptureScreen() {
   const router = useRouter();
-  
+
   // Load Inter fonts
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -52,13 +52,13 @@ export default function CaptureScreen() {
       alert("Please fill in both the caption and location!");
       return;
     }
-    
+
     setIsPublishing(true);
     setTimeout(() => {
       setIsPublishing(false);
       alert("Voyage published successfully! 🚀");
       // Go back to the main feed
-      router.replace("/main");
+      router.replace("/main/voyage");
     }, 1500);
   };
 
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     marginBottom: 24,
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   pageTitle: {
     fontFamily: "Chango_400Regular",
