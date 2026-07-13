@@ -32,3 +32,6 @@ atlas --> https://lucide.dev/icons/user
 
 comment --> https://lucide.dev/icons/message-square-text
 image upload --> https://lucide.dev/icons/image-up
+
+upvote --> https://lucide.dev/icons/arrow-big-up
+downvote --> https://lucide.dev/icons/arrow-big-down
