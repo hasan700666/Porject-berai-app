@@ -35,3 +35,7 @@ image upload --> https://lucide.dev/icons/image-up
 
 upvote --> https://lucide.dev/icons/arrow-big-up
 downvote --> https://lucide.dev/icons/arrow-big-down
+
+//pass
+
+email pass
