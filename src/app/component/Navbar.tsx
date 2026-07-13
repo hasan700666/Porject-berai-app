@@ -1,16 +1,25 @@
+import { usePathname, useRouter } from 'expo-router';
 import { Aperture, Images, User } from 'lucide-react-native';
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Navbar = () => {
   const insets = useSafeAreaInsets()
-  const [activeTab, setActiveTab] = useState('Voyage')
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Determine active tab from current route path
+  let activeTab = 'Voyage';
+  if (pathname.includes('/capture')) {
+    activeTab = 'Capture';
+  } else if (pathname.includes('/atlas')) {
+    activeTab = 'Atlas';
+  }
 
   const tabs = [
-    { id: 'Voyage', Icon: Images, label: 'Voyage' },
-    { id: 'Capture', Icon: Aperture, label: 'Capture' },
-    { id: 'Atlas', Icon: User, label: 'Atlas' },
+    { id: 'Voyage', Icon: Images, label: 'Voyage', route: '/main/voyage' },
+    { id: 'Capture', Icon: Aperture, label: 'Capture', route: '/main/capture' },
+    { id: 'Atlas', Icon: User, label: 'Atlas', route: '/main/atlas' },
   ]
 
   return (
@@ -22,7 +31,7 @@ const Navbar = () => {
           return (
             <Pressable
               key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
+              onPress={() => router.replace(tab.route as any )}
               style={({ pressed }) => [
                 styles.tabButton,
                 pressed && styles.tabPressed,

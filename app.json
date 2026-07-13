@@ -24,7 +24,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash_screen.jpg",
-          "resizeMode": "stretch",
+          "resizeMode": "cover",
           "enableFullScreenImage_legacy": true
         }
       ],
