@@ -19,3 +19,16 @@ Berai
 
 Chango --> name
 https://fonts.google.com/specimen/Chango?preview.script=Latn --> link
+
+// main page
+home --> Voyage (ভয়েজ) --> অন্যদের পোস্ট দেখা ও মিথস্ক্রিয়া
+post --> Capture (ক্যাপচার) --> ছবি আপলোড এবং বিবরণ যোগ করা
+profile --> Atlas (এটলাস) --> নিজের পোস্ট ও প্রোফাইল দেখা
+
+// icon
+voyage --> https://lucide.dev/icons/images
+capture --> https://lucide.dev/icons/aperture
+atlas --> https://lucide.dev/icons/user
+
+comment --> https://lucide.dev/icons/message-square-text
+image upload --> https://lucide.dev/icons/image-up
