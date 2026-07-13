@@ -163,6 +163,10 @@ export default function VoyageScreen() {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             <Stack.Screen options={{ headerShown: false }} />
 
+            <View style={styles.headerSection}>
+                <Text style={styles.pageTitle}>VOYAGE</Text>
+            </View>
+
             {posts.map((post) => {
                 const userVote = userVotes[post.id] || null;
                 return (
@@ -245,6 +249,17 @@ export default function VoyageScreen() {
 }
 
 const styles = StyleSheet.create({
+    headerSection: {
+        marginBottom: 24,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    pageTitle: {
+        fontFamily: "Chango_400Regular",
+        fontSize: 22,
+        color: "#0F172A",
+    },
     scrollContainer: {
         flexGrow: 1,
         backgroundColor: "#F8FAFC",
