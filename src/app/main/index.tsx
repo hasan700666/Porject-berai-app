@@ -8,7 +8,7 @@ import {
     useFonts
 } from "@expo-google-fonts/inter";
 import { Stack } from "expo-router";
-import { ArrowBigDown, ArrowBigUp, MessageSquareText } from 'lucide-react-native';
+import { ArrowBigDown, ArrowBigUp, MapPin, MessageSquareText } from 'lucide-react-native';
 import { useState } from "react";
 import {
     ActivityIndicator,
@@ -28,6 +28,7 @@ interface Post {
     postImage: string;
     caption: string;
     voteCount: number;
+    location: string;
 }
 
 export default function MainScreen() {
@@ -50,7 +51,8 @@ export default function MainScreen() {
             timestamp: "2 minutes ago",
             postImage: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
             caption: "Those who don't believe in magic will never find it. ✨",
-            voteCount: 1420
+            voteCount: 1420,
+            location: "Phi Phi, Thailand"
         },
         {
             id: "2",
@@ -59,7 +61,8 @@ export default function MainScreen() {
             timestamp: "1 hour ago",
             postImage: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
             caption: "Lost in the streets of Kyoto, finding peace in every corner. 🇯🇵",
-            voteCount: 856
+            voteCount: 856,
+            location: "Kyoto, Japan"
         },
         {
             id: "3",
@@ -68,7 +71,8 @@ export default function MainScreen() {
             timestamp: "3 hours ago",
             postImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
             caption: "A morning hike above the clouds. Nothing beats this view. 🏔️",
-            voteCount: 2341
+            voteCount: 2341,
+            location: "Fitz Roy, Argentina"
         },
         {
             id: "4",
@@ -77,7 +81,8 @@ export default function MainScreen() {
             timestamp: "5 hours ago",
             postImage: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
             caption: "Golden hour in the desert. Endless dunes and perfect quiet. 🏜️",
-            voteCount: 612
+            voteCount: 612,
+            location: "Sahara, Morocco"
         },
         {
             id: "5",
@@ -86,7 +91,8 @@ export default function MainScreen() {
             timestamp: "1 day ago",
             postImage: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=800&q=80",
             caption: "Exploring the hidden canals of Venice. Feels like a dreamscape. 🛶",
-            voteCount: 3105
+            voteCount: 3105,
+            location: "Venice, Italy"
         }
     ]);
 
@@ -174,6 +180,13 @@ export default function MainScreen() {
                                     <Text style={styles.timestamp}>{post.timestamp}</Text>
                                 </View>
                             </View>
+                            {/* Location (on the right) */}
+                            {post.location && (
+                                <View style={styles.locationContainer}>
+                                    <MapPin size={14} color="#000000" />
+                                    <Text style={styles.locationText}>{post.location}</Text>
+                                </View>
+                            )}
                         </View>
 
                         {/* Featured Travel Post Image */}
@@ -340,5 +353,16 @@ const styles = StyleSheet.create({
         fontFamily: "Inter_500Medium",
         fontSize: 12,
         color: "#64748B",
+    },
+    locationContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingVertical: 4,
+    },
+    locationText: {
+        fontFamily: "Inter_500Medium",
+        fontSize: 12,
+        color: "#000000",
     },
 });
