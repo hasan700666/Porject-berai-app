@@ -26,24 +26,47 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
-import { supabase } from '../../utils/supabase'; // আপনার ফাইল পাথ অনুযায়ী
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import { supabase } from "../../utils/supabase"; // আপনার ফাইল পাথ অনুযায়ী
 
 // ব্রাউজারের সেশন হ্যান্ডেল করার জন্য এটি প্রয়োজন
 WebBrowser.maybeCompleteAuthSession();
 
 // URL থেকে প্যারামিটার নেওয়ার জন্য হেল্পার ফাংশন
 const getParameterByName = (name: string, url: string) => {
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp('[?&#]' + name + '(=([^&#]*)|&|#|$)');
+  name = name.replace(/[\[\]]/g, "\\$&");
+  const regex = new RegExp("[?&#]" + name + "(=([^&#]*)|&|#|$)");
   const results = regex.exec(url);
   if (!results) return null;
-  if (!results[2]) return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  if (!results[2]) return "";
+  return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
 const { width } = Dimensions.get("window");
+
+const createOrUpdateUserProfile = async (
+  userId: string,
+  name: string,
+  img: string | null,
+) => {
+  const { error } = await supabase.from("user_data").upsert(
+    {
+      id: userId,
+      name,
+      img,
+      description: null,
+      upvote: 0,
+      downvote: 0,
+      voyages: 0,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) {
+    console.log("Profile sync skipped:", error.message);
+  }
+};
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -60,7 +83,7 @@ export default function SignupScreen() {
     Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
-    Chango_400Regular
+    Chango_400Regular,
   });
 
   if (!fontsLoaded) {
@@ -91,21 +114,8 @@ export default function SignupScreen() {
 
       if (data.user) {
         try {
-          const emailName = email.split('@')[0];
-          const { error: insertError } = await supabase
-            .from('user_data')
-            .insert({
-              id: data.user.id,
-              name: emailName,
-              img: null,
-              description: null,
-              upvote: 0,
-              downvote: 0,
-              voyages: 0
-            });
-          if (insertError) {
-            console.log("Client-side user_data insertion skipped (this is expected if DB trigger is active or email confirmation is enabled):", insertError.message);
-          }
+          const emailName = email.split("@")[0];
+          await createOrUpdateUserProfile(data.user.id, emailName, null);
         } catch (dbErr) {
           console.log("Failed to insert user_data on client side:", dbErr);
         }
@@ -116,7 +126,7 @@ export default function SignupScreen() {
       } else {
         Alert.alert(
           "Verify Email",
-          "Verification email has been sent. Please check your inbox and verify your email before logging in."
+          "Verification email has been sent. Please check your inbox and verify your email before logging in.",
         );
       }
     } catch (err: any) {
@@ -128,11 +138,11 @@ export default function SignupScreen() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const redirectUri = AuthSession.makeRedirectUri({ scheme: 'BeraiBerai' });
+      const redirectUri = AuthSession.makeRedirectUri({ scheme: "BeraiBerai" });
       console.log("Redirect URI configured:", redirectUri);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: redirectUri,
           skipBrowserRedirect: true,
@@ -146,21 +156,39 @@ export default function SignupScreen() {
 
       if (data?.url) {
         console.log("Opening auth session at:", data.url);
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+        const result = await WebBrowser.openAuthSessionAsync(
+          data.url,
+          redirectUri,
+        );
 
-        if (result.type === 'success' && result.url) {
+        if (result.type === "success" && result.url) {
           console.log("Auth session succeeded with URL:", result.url);
-          const code = getParameterByName('code', result.url);
-          const accessToken = getParameterByName('access_token', result.url);
-          const refreshToken = getParameterByName('refresh_token', result.url);
+          const code = getParameterByName("code", result.url);
+          const accessToken = getParameterByName("access_token", result.url);
+          const refreshToken = getParameterByName("refresh_token", result.url);
 
           if (code) {
             console.log("Exchanging auth code for session...");
-            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            const { error: exchangeError } =
+              await supabase.auth.exchangeCodeForSession(code);
             if (exchangeError) {
               console.error("Session Exchange Error:", exchangeError.message);
             } else {
               console.log("Session exchanged successfully!");
+              const { data: userData, error: userError } =
+                await supabase.auth.getUser();
+              if (userError) {
+                console.error(
+                  "Failed to fetch Google user after sign-in:",
+                  userError.message,
+                );
+              } else if (userData?.user?.id) {
+                await createOrUpdateUserProfile(
+                  userData.user.id,
+                  "googleprofilename",
+                  "googleprofileimg",
+                );
+              }
               router.replace("/main");
             }
           } else if (accessToken && refreshToken) {
@@ -173,6 +201,20 @@ export default function SignupScreen() {
               console.error("Session Set Error:", sessionError.message);
             } else {
               console.log("Session set successfully!");
+              const { data: userData, error: userError } =
+                await supabase.auth.getUser();
+              if (userError) {
+                console.error(
+                  "Failed to fetch Google user after sign-in:",
+                  userError.message,
+                );
+              } else if (userData?.user?.id) {
+                await createOrUpdateUserProfile(
+                  userData.user.id,
+                  "googleprofilename",
+                  "googleprofileimg",
+                );
+              }
               router.replace("/main");
             }
           } else {
@@ -230,7 +272,12 @@ export default function SignupScreen() {
                 emailFocused && styles.inputFocused,
               ]}
             >
-              <Ionicons name="person" size={20} color="#1E293B" style={styles.inputIcon} />
+              <Ionicons
+                name="person"
+                size={20}
+                color="#1E293B"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.textInput}
                 placeholder="Peeely@mail.com"
@@ -252,7 +299,12 @@ export default function SignupScreen() {
                 passwordFocused && styles.inputFocused,
               ]}
             >
-              <Ionicons name="lock-closed" size={20} color="#1E293B" style={styles.inputIcon} />
+              <Ionicons
+                name="lock-closed"
+                size={20}
+                color="#1E293B"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.textInput}
                 placeholder="••••••••"
@@ -264,7 +316,10 @@ export default function SignupScreen() {
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
               />
-              <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
                 <Ionicons
                   name={showPassword ? "eye-off" : "eye"}
                   size={20}
@@ -314,7 +369,10 @@ export default function SignupScreen() {
               pressed && { backgroundColor: "#F8FAFC" },
             ]}
           >
-            <Image source={require("../../../assets/images/search.png")} style={{ width: 20, height: 20, marginRight: 12 }} />
+            <Image
+              source={require("../../../assets/images/search.png")}
+              style={{ width: 20, height: 20, marginRight: 12 }}
+            />
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
           </Pressable>
         </ScrollView>

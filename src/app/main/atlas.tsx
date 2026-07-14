@@ -9,7 +9,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { Stack, useRouter } from "expo-router";
 import { ArrowBigDown, ArrowBigUp, Edit, LogOut, MapPin, MessageSquareText } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -39,6 +39,8 @@ export default function AtlasScreen() {
   const { user } = useAuth();
 
   const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down' | null>>({});
+  const [profileStats, setProfileStats] = useState({ upvote: 0, downvote: 0, voyages: 0 });
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const [posts, setPosts] = useState<Post[]>([
     {
@@ -92,6 +94,42 @@ export default function AtlasScreen() {
       location: "Venice, Italy"
     }
   ]);
+
+  useEffect(() => {
+    const fetchProfileStats = async () => {
+      if (!user?.id) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_data')
+          .select('upvote, downvote, voyages')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching profile stats:', error.message);
+          return;
+        }
+
+        if (data) {
+          setProfileStats({
+            upvote: data.upvote ?? 0,
+            downvote: data.downvote ?? 0,
+            voyages: data.voyages ?? 0,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load profile stats:', err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfileStats();
+  }, [user?.id]);
 
   // Load Inter fonts
   const [fontsLoaded] = useFonts({
@@ -186,17 +224,17 @@ export default function AtlasScreen() {
 
         <View style={styles.statsRow} id="statsRow">
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>12</Text>
+            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.upvote}</Text>
             <Text style={styles.statLabel}>Upvote</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>48</Text>
+            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.voyages}</Text>
             <Text style={styles.statLabel}>Voyages</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>1</Text>
+            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.downvote}</Text>
             <Text style={styles.statLabel}>Downvote</Text>
           </View>
         </View>
