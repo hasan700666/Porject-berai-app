@@ -12,6 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   KeyboardAvoidingView,
@@ -24,6 +25,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { supabase } from "../../utils/supabase";
 
 const { width } = Dimensions.get("window");
 
@@ -34,6 +36,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -52,9 +55,32 @@ export default function LoginScreen() {
     );
   }
  
-  const handleLogin = () => {
-    console.log("Login pressed:", email, password);
-    router.replace("/main");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        Alert.alert("Login Error", error.message);
+        return;
+      }
+
+      if (data.session) {
+        router.replace("/main");
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -144,19 +170,22 @@ export default function LoginScreen() {
 
             {/* Login Button */}
             <Pressable
-              onPress={() => {
-                console.log("Login pressed");
-                router.push("/login");
-              }}
+              onPress={handleLogin}
+              disabled={isLoading}
               style={({ pressed }) => [
                 styles.button,
                 {
                   backgroundColor: "#46BCEE",
-                  transform: [{ scale: pressed ? 0.98 : 1 }]
+                  transform: [{ scale: (pressed || isLoading) ? 0.98 : 1 }],
+                  opacity: isLoading ? 0.8 : 1,
                 }
               ]}
             >
-              <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>LOGIN</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={[styles.buttonText, { color: "#FFFFFF" }]}>LOGIN</Text>
+              )}
             </Pressable>
           </View>
 
