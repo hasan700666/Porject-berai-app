@@ -1,29 +1,18 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
 
-// Custom memory storage adapter safe for web Server-Side Rendering (SSR)
-const webStorage = {
-  getItem: (key: string) => {
-    if (typeof window === 'undefined') return null;
-    return window.localStorage.getItem(key);
-  },
-  setItem: (key: string, value: string) => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(key, value);
-  },
-  removeItem: (key: string) => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.removeItem(key);
-  },
-};
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: webStorage,
+    // মোবাইল অ্যাপের জন্য AsyncStorage এবং ওয়েবের জন্য localStorage
+    storage: Platform.OS === 'web'
+      ? (typeof window !== 'undefined' ? window.localStorage : undefined)
+      : AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
   },
 });
