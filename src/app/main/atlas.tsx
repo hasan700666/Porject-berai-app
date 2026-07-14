@@ -8,7 +8,7 @@ import {
   useFonts
 } from "@expo-google-fonts/inter";
 import { Stack, useRouter } from "expo-router";
-import { ArrowBigDown, ArrowBigUp, MapPin, MessageSquareText } from "lucide-react-native";
+import { ArrowBigDown, ArrowBigUp, Edit, LogOut, MapPin, MessageSquareText } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,6 +19,9 @@ import {
   Text,
   View
 } from "react-native";
+const UserDefultImg = require('../../../assets/images/UserDefultImg.jpg');
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../../utils/supabase";
 
 interface Post {
   id: string;
@@ -33,6 +36,7 @@ interface Post {
 
 export default function AtlasScreen() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down' | null>>({});
 
@@ -170,13 +174,17 @@ export default function AtlasScreen() {
       {/* User Stats Card */}
       <View style={styles.profileCard}>
         <Image
-          source={{ uri: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" }}
+          source={
+            user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+              ? { uri: user.user_metadata.avatar_url || user.user_metadata.picture }
+              : UserDefultImg
+          }
           style={styles.avatar}
         />
-        <Text style={styles.userName}>Traveler Explorer</Text>
+        <Text style={styles.userName}>{user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "Traveler Explorer"}</Text>
         <Text style={styles.userBio}>Mapping the world, one pin at a time.</Text>
 
-        <View style={styles.statsRow}>
+        <View style={styles.statsRow} id="statsRow">
           <View style={styles.statItem}>
             <Text style={styles.statNum}>12</Text>
             <Text style={styles.statLabel}>Upvote</Text>
@@ -191,6 +199,46 @@ export default function AtlasScreen() {
             <Text style={styles.statNum}>1</Text>
             <Text style={styles.statLabel}>Downvote</Text>
           </View>
+        </View>
+
+        {/* Edit and Logout Buttons */}
+        <View style={styles.actionButtonsRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.profileActionButton,
+              styles.editButton,
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }
+            ]}
+            onPress={() => {
+              alert("Edit Profile pressed");
+            }}
+          >
+            <Edit size={16} color="#1E293B" style={{ marginRight: 6 }} />
+            <Text style={styles.profileActionButtonText}>Edit Profile</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.profileActionButton,
+              styles.logoutButton,
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }
+            ]}
+            onPress={async () => {
+              try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                  console.error("Logout error:", error.message);
+                } else {
+                  router.replace("/signup");
+                }
+              } catch (err) {
+                console.error("Logout exception:", err);
+              }
+            }}
+          >
+            <LogOut size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={[styles.profileActionButtonText, { color: "#FFFFFF" }]}>Logout</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -310,6 +358,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 3,
+  },
+  actionButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 20,
+    gap: 12,
+  },
+  profileActionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  editButton: {
+    backgroundColor: "#E7F18C",
+    borderColor: "#E7F18C",
+  },
+  logoutButton: {
+    backgroundColor: "#EF4444",
+    borderColor: "#EF4444",
+  },
+  profileActionButtonText: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 13,
+    color: "#1E293B",
   },
   avatar: {
     width: 80,

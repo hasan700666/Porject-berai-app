@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // মোবাইল অ্যাপের জন্য AsyncStorage এবং ওয়েবের জন্য localStorage
+    // AsyncStorage for mobile, localStorage for web
     storage: Platform.OS === 'web'
       ? (typeof window !== 'undefined' ? window.localStorage : undefined)
       : AsyncStorage,

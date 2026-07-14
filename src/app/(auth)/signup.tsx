@@ -12,6 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   KeyboardAvoidingView,
@@ -25,6 +26,23 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import { supabase } from '../../utils/supabase'; // আপনার ফাইল পাথ অনুযায়ী
+
+// ব্রাউজারের সেশন হ্যান্ডেল করার জন্য এটি প্রয়োজন
+WebBrowser.maybeCompleteAuthSession();
+
+// URL থেকে প্যারামিটার নেওয়ার জন্য হেল্পার ফাংশন
+const getParameterByName = (name: string, url: string) => {
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp('[?&#]' + name + '(=([^&#]*)|&|#|$)');
+  const results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+};
+
 const { width } = Dimensions.get("window");
 
 export default function SignupScreen() {
@@ -34,6 +52,7 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -52,9 +71,122 @@ export default function SignupScreen() {
     );
   }
 
-  const handleSignup = () => {
-    console.log("Signup pressed:", email, password);
-    router.replace("/main");
+  const handleSignup = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        Alert.alert("Signup Error", error.message);
+        return;
+      }
+
+      if (data.user) {
+        try {
+          const emailName = email.split('@')[0];
+          const { error: insertError } = await supabase
+            .from('user_data')
+            .insert({
+              id: data.user.id,
+              name: emailName,
+              img: null,
+              description: null,
+              upvote: 0,
+              downvote: 0,
+              voyages: 0
+            });
+          if (insertError) {
+            console.log("Client-side user_data insertion skipped (this is expected if DB trigger is active or email confirmation is enabled):", insertError.message);
+          }
+        } catch (dbErr) {
+          console.log("Failed to insert user_data on client side:", dbErr);
+        }
+      }
+
+      if (data.session) {
+        router.replace("/main");
+      } else {
+        Alert.alert(
+          "Verify Email",
+          "Verification email has been sent. Please check your inbox and verify your email before logging in."
+        );
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const redirectUri = AuthSession.makeRedirectUri({ scheme: 'BeraiBerai' });
+      console.log("Redirect URI configured:", redirectUri);
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUri,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        console.error("Google Auth Error:", error.message);
+        return;
+      }
+
+      if (data?.url) {
+        console.log("Opening auth session at:", data.url);
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+
+        if (result.type === 'success' && result.url) {
+          console.log("Auth session succeeded with URL:", result.url);
+          const code = getParameterByName('code', result.url);
+          const accessToken = getParameterByName('access_token', result.url);
+          const refreshToken = getParameterByName('refresh_token', result.url);
+
+          if (code) {
+            console.log("Exchanging auth code for session...");
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeError) {
+              console.error("Session Exchange Error:", exchangeError.message);
+            } else {
+              console.log("Session exchanged successfully!");
+              router.replace("/main");
+            }
+          } else if (accessToken && refreshToken) {
+            console.log("Setting manual session...");
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (sessionError) {
+              console.error("Session Set Error:", sessionError.message);
+            } else {
+              console.log("Session set successfully!");
+              router.replace("/main");
+            }
+          } else {
+            console.warn("No code or tokens found in redirect URL");
+          }
+        } else {
+          console.log("Auth session cancelled or failed:", result.type);
+        }
+      } else {
+        console.error("No authorization URL returned from Supabase");
+      }
+    } catch (err: any) {
+      console.error("Google Sign-In Exception:", err);
+    }
   };
 
   return (
@@ -144,12 +276,17 @@ export default function SignupScreen() {
             {/* Signup Button */}
             <Pressable
               onPress={handleSignup}
+              disabled={isLoading}
               style={({ pressed }) => [
                 styles.signupButton,
-                pressed && { opacity: 0.9 },
+                (pressed || isLoading) && { opacity: 0.9 },
               ]}
             >
-              <Text style={styles.signupButtonText}>SIGNUP</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#1E293B" />
+              ) : (
+                <Text style={styles.signupButtonText}>SIGNUP</Text>
+              )}
             </Pressable>
           </View>
 
@@ -170,13 +307,14 @@ export default function SignupScreen() {
 
           {/* Google Social Login */}
           <Pressable
-            onPress={() => console.log("Google Sign In pressed")}
+            id="google_sing_up"
+            onPress={handleGoogleSignIn}
             style={({ pressed }) => [
               styles.googleButton,
               pressed && { backgroundColor: "#F8FAFC" },
             ]}
           >
-            <Image source={require("@/assets/images/search.png")} style={{ width: 20, height: 20, marginRight: 12 }} />
+            <Image source={require("../../../assets/images/search.png")} style={{ width: 20, height: 20, marginRight: 12 }} />
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
           </Pressable>
         </ScrollView>
