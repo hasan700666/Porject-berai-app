@@ -6,16 +6,16 @@ function RootLayoutContent() {
   const { session, isLoading } = useAuth(); // AuthContext থেকে নিন
 
   useEffect(() => {
-    if (isLoading) return; // সেশন লোড না হওয়া পর্যন্ত অপেক্ষা করুন
+  if (isLoading) return;
 
-    if (!session) {
-      // সেশন না থাকলে সাইনআপে পাঠান
-      router.replace("/welcome");
-    } else {
-      // সেশন থাকলে মেইন অ্যাপে পাঠান
-      router.replace("/main");
-    }
-  }, [session, isLoading]);
+  // সেশন থাকলে এবং সেশনটি যদি ভ্যালিড হয়, তবেই /main-এ পাঠান
+  if (session) {
+    router.replace("/main");
+  } else {
+    // সেশন না থাকলে /welcome-এ পাঠান
+    router.replace("/welcome");
+  }
+}, [session, isLoading]);
 
   return (
     <Stack screenOptions={{ headerShown: false }} />
