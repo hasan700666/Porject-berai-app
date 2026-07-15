@@ -1,25 +1,30 @@
 import { router, Stack } from "expo-router";
 import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function RootLayoutContent() {
-  const { session, isLoading } = useAuth(); // AuthContext থেকে নিন
+  const { session, isLoading } = useAuth();
 
   useEffect(() => {
-  if (isLoading) return;
+    if (isLoading) return;
 
-  // সেশন থাকলে এবং সেশনটি যদি ভ্যালিড হয়, তবেই /main-এ পাঠান
-  if (session) {
-    router.replace("/main");
-  } else {
-    // সেশন না থাকলে /welcome-এ পাঠান
-    router.replace("/welcome");
+    if (session) {
+      router.replace("/main");
+    } else {
+      router.replace("/welcome");
+    }
+  }, [session, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#46BCEE" />
+      </View>
+    );
   }
-}, [session, isLoading]);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }} />
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 export default function RootLayout() {
@@ -29,3 +34,12 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+});

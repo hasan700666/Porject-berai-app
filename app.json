@@ -4,12 +4,12 @@
     "slug": "vaseting_app_2",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "BeraiBerai",
+    "scheme": "berai",
     "userInterfaceStyle": "automatic",
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo-01.jpg"
+        "foregroundImage": "./assets/images/search.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.hasan700666.vaseting_app_2"
