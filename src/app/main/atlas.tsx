@@ -5,10 +5,17 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
   Inter_800ExtraBold,
-  useFonts
+  useFonts,
 } from "@expo-google-fonts/inter";
 import { Stack, useRouter } from "expo-router";
-import { ArrowBigDown, ArrowBigUp, Edit, LogOut, MapPin, MessageSquareText } from "lucide-react-native";
+import {
+  ArrowBigDown,
+  ArrowBigUp,
+  Edit,
+  LogOut,
+  MapPin,
+  MessageSquareText,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,11 +24,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
-const UserDefultImg = require('../../../assets/images/UserDefultImg.jpg');
-import { useAuth } from "../context/AuthContext";
 import { supabase } from "../../utils/supabase";
+import { useAuth } from "../context/AuthContext";
+const UserDefultImg = require("../../../assets/images/UserDefultImg.jpg");
 
 interface Post {
   id: string;
@@ -38,62 +45,18 @@ export default function AtlasScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down' | null>>({});
-  const [profileStats, setProfileStats] = useState({ upvote: 0, downvote: 0, voyages: 0 });
+  const [userVotes, setUserVotes] = useState<
+    Record<string, "up" | "down" | null>
+  >({});
+  const [profileStats, setProfileStats] = useState({
+    upvote: 0,
+    downvote: 0,
+    voyages: 0,
+  });
   const [profileLoading, setProfileLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(true);
 
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: "1",
-      userName: "Bety Miller",
-      userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-      timestamp: "2 minutes ago",
-      postImage: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
-      caption: "Those who don't believe in magic will never find it. ✨",
-      voteCount: 1420,
-      location: "Phi Phi, Thailand"
-    },
-    {
-      id: "2",
-      userName: "Marcus Aurelius",
-      userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      timestamp: "1 hour ago",
-      postImage: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-      caption: "Lost in the streets of Kyoto, finding peace in every corner. 🇯🇵",
-      voteCount: 856,
-      location: "Kyoto, Japan"
-    },
-    {
-      id: "3",
-      userName: "Sophia Chen",
-      userAvatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
-      timestamp: "3 hours ago",
-      postImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
-      caption: "A morning hike above the clouds. Nothing beats this view. 🏔️",
-      voteCount: 2341,
-      location: "Fitz Roy, Argentina"
-    },
-    {
-      id: "4",
-      userName: "David K.",
-      userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      timestamp: "5 hours ago",
-      postImage: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
-      caption: "Golden hour in the desert. Endless dunes and perfect quiet. 🏜️",
-      voteCount: 612,
-      location: "Sahara, Morocco"
-    },
-    {
-      id: "5",
-      userName: "Emma Watson",
-      userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-      timestamp: "1 day ago",
-      postImage: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=800&q=80",
-      caption: "Exploring the hidden canals of Venice. Feels like a dreamscape. 🛶",
-      voteCount: 3105,
-      location: "Venice, Italy"
-    }
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     const fetchProfileStats = async () => {
@@ -104,13 +67,13 @@ export default function AtlasScreen() {
 
       try {
         const { data, error } = await supabase
-          .from('user_data')
-          .select('upvote, downvote, voyages')
-          .eq('id', user.id)
+          .from("user_data")
+          .select("upvote, downvote, voyages")
+          .eq("id", user.id)
           .maybeSingle();
 
         if (error) {
-          console.error('Error fetching profile stats:', error.message);
+          console.error("Error fetching profile stats:", error.message);
           return;
         }
 
@@ -122,13 +85,54 @@ export default function AtlasScreen() {
           });
         }
       } catch (err) {
-        console.error('Failed to load profile stats:', err);
+        console.error("Failed to load profile stats:", err);
       } finally {
         setProfileLoading(false);
       }
     };
 
+    const fetchPosts = async () => {
+      if (!user?.id) {
+        setPosts([]);
+        setPostsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("post")
+          .select(
+            "id, user_id, user_name, user_img, post_img, post_description, post_location, post_upvote, post_time",
+          )
+          .eq("user_id", user.id)
+          .order("id", { ascending: false });
+
+        if (error) {
+          console.error("Error fetching posts:", error.message);
+          return;
+        }
+
+        const mappedPosts: Post[] = (data ?? []).map((item: any) => ({
+          id: item.id?.toString() ?? "",
+          userName: item.user_name || "Traveler Explorer",
+          userAvatar: item.user_img || "",
+          timestamp: item.post_time || "Just now",
+          postImage: item.post_img || "",
+          caption: item.post_description || "No caption yet",
+          voteCount: Number(item.post_upvote ?? 0),
+          location: item.post_location || "Unknown location",
+        }));
+
+        setPosts(mappedPosts);
+      } catch (err) {
+        console.error("Failed to load posts:", err);
+      } finally {
+        setPostsLoading(false);
+      }
+    };
+
     fetchProfileStats();
+    fetchPosts();
   }, [user?.id]);
 
   // Load Inter fonts
@@ -141,7 +145,7 @@ export default function AtlasScreen() {
     Chango_400Regular,
   });
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || profileLoading || postsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#46BCEE" />
@@ -150,25 +154,25 @@ export default function AtlasScreen() {
   }
 
   const handleUpvote = (postId: string) => {
-    setUserVotes(prevUserVotes => {
+    setUserVotes((prevUserVotes) => {
       const currentVote = prevUserVotes[postId] || null;
       let voteDiff = 0;
-      let newVote: 'up' | 'down' | null = null;
+      let newVote: "up" | "down" | null = null;
 
-      if (currentVote === 'up') {
+      if (currentVote === "up") {
         voteDiff = -1;
         newVote = null;
       } else {
-        voteDiff = currentVote === 'down' ? 2 : 1;
-        newVote = 'up';
+        voteDiff = currentVote === "down" ? 2 : 1;
+        newVote = "up";
       }
 
-      setPosts(prevPosts =>
-        prevPosts.map(post =>
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
           post.id === postId
             ? { ...post, voteCount: post.voteCount + voteDiff }
-            : post
-        )
+            : post,
+        ),
       );
 
       return { ...prevUserVotes, [postId]: newVote };
@@ -176,25 +180,25 @@ export default function AtlasScreen() {
   };
 
   const handleDownvote = (postId: string) => {
-    setUserVotes(prevUserVotes => {
+    setUserVotes((prevUserVotes) => {
       const currentVote = prevUserVotes[postId] || null;
       let voteDiff = 0;
-      let newVote: 'up' | 'down' | null = null;
+      let newVote: "up" | "down" | null = null;
 
-      if (currentVote === 'down') {
+      if (currentVote === "down") {
         voteDiff = 1;
         newVote = null;
       } else {
-        voteDiff = currentVote === 'up' ? -2 : -1;
-        newVote = 'down';
+        voteDiff = currentVote === "up" ? -2 : -1;
+        newVote = "down";
       }
 
-      setPosts(prevPosts =>
-        prevPosts.map(post =>
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
           post.id === postId
             ? { ...post, voteCount: post.voteCount + voteDiff }
-            : post
-        )
+            : post,
+        ),
       );
 
       return { ...prevUserVotes, [postId]: newVote };
@@ -202,7 +206,10 @@ export default function AtlasScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.headerSection}>
@@ -214,27 +221,43 @@ export default function AtlasScreen() {
         <Image
           source={
             user?.user_metadata?.avatar_url || user?.user_metadata?.picture
-              ? { uri: user.user_metadata.avatar_url || user.user_metadata.picture }
+              ? {
+                  uri:
+                    user.user_metadata.avatar_url || user.user_metadata.picture,
+                }
               : UserDefultImg
           }
           style={styles.avatar}
         />
-        <Text style={styles.userName}>{user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "Traveler Explorer"}</Text>
-        <Text style={styles.userBio}>Mapping the world, one pin at a time.</Text>
+        <Text style={styles.userName}>
+          {user?.user_metadata?.full_name ||
+            user?.user_metadata?.name ||
+            user?.email?.split("@")[0] ||
+            "Traveler Explorer"}
+        </Text>
+        <Text style={styles.userBio}>
+          Mapping the world, one pin at a time.
+        </Text>
 
         <View style={styles.statsRow} id="statsRow">
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.upvote}</Text>
+            <Text style={styles.statNum}>
+              {profileLoading ? "..." : profileStats.upvote}
+            </Text>
             <Text style={styles.statLabel}>Upvote</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.voyages}</Text>
+            <Text style={styles.statNum}>
+              {profileLoading ? "..." : profileStats.voyages}
+            </Text>
             <Text style={styles.statLabel}>Voyages</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{profileLoading ? '...' : profileStats.downvote}</Text>
+            <Text style={styles.statNum}>
+              {profileLoading ? "..." : profileStats.downvote}
+            </Text>
             <Text style={styles.statLabel}>Downvote</Text>
           </View>
         </View>
@@ -245,7 +268,7 @@ export default function AtlasScreen() {
             style={({ pressed }) => [
               styles.profileActionButton,
               styles.editButton,
-              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
             ]}
             onPress={() => {
               alert("Edit Profile pressed");
@@ -259,7 +282,7 @@ export default function AtlasScreen() {
             style={({ pressed }) => [
               styles.profileActionButton,
               styles.logoutButton,
-              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
             ]}
             onPress={async () => {
               try {
@@ -275,79 +298,102 @@ export default function AtlasScreen() {
             }}
           >
             <LogOut size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-            <Text style={[styles.profileActionButtonText, { color: "#FFFFFF" }]}>Logout</Text>
+            <Text
+              style={[styles.profileActionButtonText, { color: "#FFFFFF" }]}
+            >
+              Logout
+            </Text>
           </Pressable>
         </View>
       </View>
 
       {/* Map Placeholder Card */}
       <View style={styles.sectionCard}>
-        {posts.map((post) => {
-          const userVote = userVotes[post.id] || null;
-          return (
-            <View key={post.id}>
-              {/* User Info Header */}
-              <View style={styles.userHeader}>
-                {/* Location (on the right) */}
-                {post.location && (
-                  <View style={styles.locationContainer}>
-                    <MapPin size={14} color="#000000" />
-                    <Text style={styles.locationText}>{post.location}</Text>
+        {posts.length === 0 ? (
+          <Text style={styles.emptyStateText}>
+            No voyages yet. Publish one to fill Atlas.
+          </Text>
+        ) : (
+          posts.map((post) => {
+            const userVote = userVotes[post.id] || null;
+            return (
+              <View key={post.id}>
+                {/* User Info Header */}
+                <View style={styles.userHeader}>
+                  {post.location && (
+                    <View style={styles.locationContainer}>
+                      <MapPin size={14} color="#000000" />
+                      <Text style={styles.locationText}>{post.location}</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Featured Travel Post Image */}
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{
+                      uri:
+                        post.postImage ||
+                        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80",
+                    }}
+                    style={styles.postImage}
+                    resizeMode="cover"
+                  />
+                </View>
+
+                {/* Post Caption */}
+                <View style={styles.captionContainer}>
+                  <Text style={styles.captionText}>{post.caption}</Text>
+                </View>
+
+                {/* Footer Status with Buttons */}
+                <View style={styles.footerRow}>
+                  <View style={styles.actionsRight}>
+                    <Pressable
+                      onPress={() => handleUpvote(post.id)}
+                      style={styles.actionButton}
+                    >
+                      <ArrowBigUp
+                        size={22}
+                        color={userVote === "up" ? "#46BCEE" : "#64748B"}
+                        fill={userVote === "up" ? "#46BCEE" : "transparent"}
+                      />
+                    </Pressable>
+
+                    <Text
+                      style={[
+                        styles.voteText,
+                        userVote === "up" && styles.activeUpvoteText,
+                      ]}
+                    >
+                      {post.voteCount}
+                    </Text>
+
+                    <Pressable
+                      onPress={() => handleDownvote(post.id)}
+                      style={styles.actionButton}
+                    >
+                      <ArrowBigDown
+                        size={22}
+                        color={userVote === "down" ? "#EF4444" : "#64748B"}
+                        fill={userVote === "down" ? "#EF4444" : "transparent"}
+                      />
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() =>
+                        alert(`Comment pressed for post ${post.id}`)
+                      }
+                      style={styles.actionButton}
+                    >
+                      <MessageSquareText size={20} color="#64748B" />
+                    </Pressable>
                   </View>
-                )}
-              </View>
-
-              {/* Featured Travel Post Image */}
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: post.postImage }}
-                  style={styles.postImage}
-                  resizeMode="cover"
-                />
-              </View>
-
-              {/* Post Caption */}
-              <View style={styles.captionContainer}>
-                <Text style={styles.captionText}>
-                  {post.caption}
-                </Text>
-              </View>
-
-              {/* Footer Status with Buttons */}
-              <View style={styles.footerRow}>
-                {/* Interactions (Upvote, Downvote, Comment) */}
-                <View style={styles.actionsRight}>
-                  {/* Upvote */}
-                  <Pressable onPress={() => handleUpvote(post.id)} style={styles.actionButton}>
-                    <ArrowBigUp
-                      size={22}
-                      color={userVote === 'up' ? '#46BCEE' : '#64748B'}
-                      fill={userVote === 'up' ? '#46BCEE' : 'transparent'}
-                    />
-                  </Pressable>
-
-                  <Text style={[styles.voteText, userVote === 'up' && styles.activeUpvoteText]}>
-                    {post.voteCount}
-                  </Text>
-
-                  {/* Downvote */}
-                  <Pressable onPress={() => handleDownvote(post.id)} style={styles.actionButton}>
-                    <ArrowBigDown
-                      size={22}
-                      color={userVote === 'down' ? '#EF4444' : '#64748B'}
-                      fill={userVote === 'down' ? '#EF4444' : 'transparent'}
-                    />
-                  </Pressable>
-
-                  {/* Comment */}
-                  <Pressable onPress={() => alert(`Comment pressed for post ${post.id}`)} style={styles.actionButton}>
-                    <MessageSquareText size={20} color="#64748B" />
-                  </Pressable>
                 </View>
               </View>
-            </View>
-          );
-        })}
+            );
+          })
+        )}
       </View>
     </ScrollView>
   );
@@ -515,7 +561,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   userHeader: {
-    display: 'flex',
+    display: "flex",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -602,5 +648,12 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     fontSize: 12,
     color: "#000000",
+  },
+  emptyStateText: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 14,
+    color: "#64748B",
+    textAlign: "center",
+    paddingVertical: 12,
   },
 });

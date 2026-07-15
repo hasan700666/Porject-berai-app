@@ -5,10 +5,10 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
   Inter_800ExtraBold,
-  useFonts
+  useFonts,
 } from "@expo-google-fonts/inter";
 import { Stack, useRouter } from "expo-router";
-import { Camera, MapPin, Sparkles } from 'lucide-react-native';
+import { Camera, MapPin, Sparkles } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,8 +19,10 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
 } from "react-native";
+import { supabase } from "../../utils/supabase";
+import { useAuth } from "../context/AuthContext";
 
 export default function CaptureScreen() {
   const router = useRouter();
@@ -35,6 +37,8 @@ export default function CaptureScreen() {
     Chango_400Regular,
   });
 
+  const { user } = useAuth();
+  const [imageUrl, setImageUrl] = useState("");
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -47,19 +51,53 @@ export default function CaptureScreen() {
     );
   }
 
-  const handlePublish = () => {
-    if (!caption.trim() || !location.trim()) {
-      alert("Please fill in both the caption and location!");
+  const handlePublish = async () => {
+    if (!imageUrl.trim() || !caption.trim() || !location.trim()) {
+      alert("Please fill in the image URL, caption, and location!");
+      return;
+    }
+
+    if (!user?.id) {
+      alert("You must be signed in to publish a voyage.");
       return;
     }
 
     setIsPublishing(true);
-    setTimeout(() => {
-      setIsPublishing(false);
+
+    try {
+      const { error } = await supabase.from("post").insert({
+        user_id: user.id,
+        user_name:
+          user.user_metadata?.full_name ||
+          user.email?.split("@")[0] ||
+          "Anonymous",
+        user_description: null,
+        user_img:
+          user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+        post_img: imageUrl.trim(),
+        post_description: caption.trim(),
+        post_data: null,
+        post_time: new Date().toISOString().slice(11, 19),
+        post_location: location.trim(),
+        post_upvote: 0,
+        post_downvote: 0,
+        post_comment: 0,
+      });
+
+      if (error) {
+        console.error("Publish error:", error.message);
+        alert("Failed to publish voyage. Please try again.");
+        return;
+      }
+
       alert("Voyage published successfully! 🚀");
-      // Go back to the main feed
       router.replace("/main/voyage");
-    }, 1500);
+    } catch (err) {
+      console.error("Unexpected publish error:", err);
+      alert("An unexpected error occurred while publishing.");
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -67,27 +105,54 @@ export default function CaptureScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <Stack.Screen options={{ headerShown: false }} />
 
         <View style={styles.headerSection}>
           <Text style={styles.pageTitle}>CAPTURE VOYAGE</Text>
-          <Text style={styles.pageSubtitle}>Share your latest adventure with the world</Text>
+          <Text style={styles.pageSubtitle}>
+            Share your latest adventure with the world
+          </Text>
         </View>
 
         {/* Upload Container */}
-        <Pressable onPress={() => alert("Photo library / Camera option coming soon!")} style={styles.uploadCard}>
+        <Pressable
+          onPress={() => alert("Photo library / Camera option coming soon!")}
+          style={styles.uploadCard}
+        >
           <View style={styles.uploadContent}>
             <View style={styles.iconCircle}>
               <Camera size={32} color="#46BCEE" />
             </View>
             <Text style={styles.uploadTitle}>Snap or Upload Photo</Text>
-            <Text style={styles.uploadSubtitle}>Supports JPEG, PNG up to 10MB</Text>
+            <Text style={styles.uploadSubtitle}>
+              Supports JPEG, PNG up to 10MB
+            </Text>
           </View>
         </Pressable>
 
         {/* Form Container */}
         <View style={styles.formContainer}>
+          {/* Image URL Input */}
+          <View style={styles.inputGroup}>
+            <View style={styles.labelRow}>
+              <Camera size={16} color="#64748B" />
+              <Text style={styles.inputLabel}>IMAGE URL</Text>
+            </View>
+            <TextInput
+              style={styles.textInput}
+              placeholder="https://example.com/photo.jpg"
+              placeholderTextColor="#94A3B8"
+              value={imageUrl}
+              onChangeText={setImageUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+          </View>
+
           {/* Caption Input */}
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
@@ -127,7 +192,7 @@ export default function CaptureScreen() {
             style={({ pressed }) => [
               styles.publishButton,
               pressed && styles.publishButtonPressed,
-              isPublishing && styles.publishButtonDisabled
+              isPublishing && styles.publishButtonDisabled,
             ]}
           >
             {isPublishing ? (
@@ -211,11 +276,15 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 3,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px 4px 16px rgba(15, 23, 42, 0.05)" }
+      : {
+        shadowColor: "#0F172A",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 16,
+        elevation: 3,
+      }),
   },
   inputGroup: {
     marginBottom: 20,
@@ -262,11 +331,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 8,
-    shadowColor: "#46BCEE",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px 4px 12px rgba(70, 188, 238, 0.25)" }
+      : {
+        shadowColor: "#46BCEE",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+      }),
   },
   publishButtonPressed: {
     opacity: 0.9,
@@ -274,8 +347,9 @@ const styles = StyleSheet.create({
   },
   publishButtonDisabled: {
     backgroundColor: "#94A3B8",
-    shadowOpacity: 0,
-    elevation: 0,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "none" }
+      : { shadowOpacity: 0, elevation: 0 }),
   },
   publishButtonText: {
     fontFamily: "Inter_700Bold",
