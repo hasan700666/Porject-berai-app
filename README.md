@@ -40,4 +40,17 @@ downvote --> https://lucide.dev/icons/arrow-big-down
 
 email 
 
-//
+// what to do
+
+1. npm run start 
+2. open the expo go app
+3. connected to ip --> exp://192.168.0.110:8081
+4. wait
+5. sign up
+6. login --> amraandbalkoi@gmail.com , Hasan123456
+7. logout and show signup
+8. show the hame page
+9. show the capture page
+10. show the atlas page
+11. create a post --> 
+12. show the post on home

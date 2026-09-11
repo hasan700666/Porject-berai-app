@@ -30,7 +30,8 @@
         }
       ],
       "@react-native-vector-icons/ionicons",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -39,7 +40,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c6c31ae0-90d5-438a-9859-d46f3ebb86d9"
+        "projectId": "a317f86e-3add-4f82-bb5a-185857649e91"
       }
     }
   }
